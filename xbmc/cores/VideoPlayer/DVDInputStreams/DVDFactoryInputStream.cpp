@@ -99,7 +99,8 @@ std::shared_ptr<CDVDInputStream> CDVDFactoryInputStream::CreateInputStream(IVide
   else if(file.substr(0, 6) == "pvr://")
     return std::shared_ptr<CDVDInputStreamPVRManager>(new CDVDInputStreamPVRManager(pPlayer, fileitem));
 #ifdef HAVE_LIBBLURAY
-  else if (fileitem.IsType(".bdmv") || fileitem.IsType(".mpls") || file.substr(0, 7) == "bluray:")
+  else if (fileitem.IsType(".bdmv") || fileitem.IsType(".mpls") || file.substr(0, 7) == "bluray:"
+          || fileitem.IsType(".bdm") || fileitem.IsType(".mpl"))
     return std::shared_ptr<CDVDInputStreamBluray>(new CDVDInputStreamBluray(pPlayer, fileitem));
 #endif
   else if(file.substr(0, 6) == "rtp://"
