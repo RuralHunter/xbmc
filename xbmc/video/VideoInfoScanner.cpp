@@ -422,7 +422,7 @@ namespace VIDEO
       if (IsExcluded(pItem->GetPath(), (content == CONTENT_TVSHOWS) ? g_advancedSettings.m_tvshowExcludeFromScanRegExps
                                                                     : g_advancedSettings.m_moviesExcludeFromScanRegExps))
         continue;
-
+      
       if (info2->Content() == CONTENT_MOVIES || info2->Content() == CONTENT_MUSICVIDEOS)
       {
         if (m_handle)
@@ -1977,7 +1977,24 @@ namespace VIDEO
   {
     MOVIELIST movielist;
     CVideoInfoDownloader imdb(scraper);
-    int returncode = imdb.FindMovie(videoName, movielist, progress);
+    
+    //fix for CMCT style names
+    size_t start=0;    //the position actual name should start
+    if(videoName.at(0)=='[') //CMCT style
+    {
+        start=videoName.find(']');
+        if(start != std::string::npos) //found end
+        {
+            start++;
+            if(videoName.at(start)=='.')//skip '.'
+                start++;
+        }
+        if(start>=videoName.size() || start<0) //don't skip if the '[]' includes the whole filename
+            start=0;
+    }    
+    std::string actualName=videoName.substr(start);
+    
+    int returncode = imdb.FindMovie(actualName, movielist, progress);
     if (returncode < 0 || (returncode == 0 && (m_bStop || !DownloadFailed(progress))))
     { // scraper reported an error, or we had an error and user wants to cancel the scan
       m_bStop = true;
