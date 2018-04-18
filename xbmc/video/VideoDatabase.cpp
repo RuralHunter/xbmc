@@ -8465,7 +8465,7 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
     }
     m_pDS->close();
 
-    std::string filesToDelete;
+    std::vector<int> filesToDelete;
 
     // Add any files that don't have a valid idPath entry to the filesToDelete list.
     m_pDS->query("SELECT files.idFile FROM files WHERE NOT EXISTS (SELECT 1 FROM path WHERE path.idPath = files.idPath)");
@@ -8473,7 +8473,7 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
     {
       std::string file = m_pDS->fv("files.idFile").get_asString() + ",";
       filesToTestForDelete += file;
-      filesToDelete += file;
+      filesToDelete.push_back(m_pDS->fv("files.idFile").get_asInt());
 
       m_pDS->next();
     }
@@ -8502,10 +8502,13 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
 
     if (!filesToDelete.empty())
     {
-      filesToDelete = "(" + StringUtils::TrimRight(filesToDelete, ",") + ")";
+      std::string fids;
+      for (const auto &i : filesToDelete)
+        fids += StringUtils::Format("%i,", i);
+      fids = "(" + StringUtils::TrimRight(fids, ",") + ")";
 
       CLog::Log(LOGDEBUG, LOGDATABASE, "%s: Cleaning files table", __FUNCTION__);
-      sql = "DELETE FROM files WHERE idFile IN " + filesToDelete;
+      sql = "DELETE FROM files WHERE idFile IN " + fids;
       m_pDS->exec(sql);
     }
 
@@ -8670,7 +8673,7 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
 }
 
 std::vector<int> CVideoDatabase::CleanMediaType(const std::string &mediaType, const std::string &cleanableFileIDs,
-                                                std::map<int, bool> &pathsDeleteDecisions, std::string &deletedFileIDs, bool silent)
+                                                std::map<int, bool> &pathsDeleteDecisions, std::vector<int> &deletedFileIDs, bool silent)
 {
   std::vector<int> cleanedIDs;
   if (mediaType.empty() || cleanableFileIDs.empty())
@@ -8722,6 +8725,8 @@ std::vector<int> CVideoDatabase::CleanMediaType(const std::string &mediaType, co
   while (!m_pDS2->eof())
   {
     bool del = true;
+    int fileId=m_pDS2->fv(1).get_asInt();
+    
     if (m_pDS2->fv(3).get_isNull() == false)
     {
       std::string parentPath = m_pDS2->fv(3).get_asString();
@@ -8750,7 +8755,7 @@ std::vector<int> CVideoDatabase::CleanMediaType(const std::string &mediaType, co
           // in silent mode assume that the files are just temporarily missing
           if (silent)
             del = false;
-          else
+          else if(std::find(deletedFileIDs.begin(), deletedFileIDs.end(), fileId) == deletedFileIDs.end() )//not in deletedFileIDs list yet
           {
             CGUIDialogYesNo* pDialog = g_windowManager.GetWindow<CGUIDialogYesNo>(WINDOW_DIALOG_YES_NO);
             if (pDialog != NULL)
@@ -8765,6 +8770,8 @@ std::vector<int> CVideoDatabase::CleanMediaType(const std::string &mediaType, co
               del = !pDialog->IsConfirmed();
             }
           }
+          else//already in deletedFileIDs list
+              del = true;
         }
 
         sourcePathsDeleteDecisions.insert(std::make_pair(sourcePathID, std::make_pair(sourcePathNotExists, del)));
@@ -8782,7 +8789,7 @@ std::vector<int> CVideoDatabase::CleanMediaType(const std::string &mediaType, co
 
     if (del)
     {
-      deletedFileIDs += m_pDS2->fv(1).get_asString() + ",";
+      deletedFileIDs.push_back(fileId);
       int mid=m_pDS2->fv(0).get_asInt();
       if(mid > 0)
         cleanedIDs.push_back(mid);
