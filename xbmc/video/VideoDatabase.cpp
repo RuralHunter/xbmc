@@ -8753,7 +8753,7 @@ std::vector<int> CVideoDatabase::CleanMediaType(const std::string &mediaType, co
         if (sourcePathNotExists)
         {
           // in silent mode assume that the files are just temporarily missing
-          if (silent)
+          if (silent || sourcePath.empty() || sourcePath.find("://") != std::string::npos)
             del = false;
           else if(std::find(deletedFileIDs.begin(), deletedFileIDs.end(), fileId) == deletedFileIDs.end() )//not in deletedFileIDs list yet
           {
