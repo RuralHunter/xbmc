@@ -8,6 +8,7 @@
 
 #include "VideoInfoScanner.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "ServiceBroker.h"
@@ -16,6 +17,7 @@
 #include "events/EventLog.h"
 #include "events/MediaLibraryEvent.h"
 #include "FileItem.h"
+#include "filesystem/Directory.h"
 #include "filesystem/DirectoryCache.h"
 #include "filesystem/File.h"
 #include "filesystem/MultiPathDirectory.h"
@@ -427,7 +429,7 @@ namespace VIDEO
       if (CUtil::ExcludeFileOrFolder(pItem->GetPath(), (content == CONTENT_TVSHOWS) ? CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_tvshowExcludeFromScanRegExps
                                                                     : CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_moviesExcludeFromScanRegExps))
         continue;
-
+      
       if (info2->Content() == CONTENT_MOVIES || info2->Content() == CONTENT_MUSICVIDEOS)
       {
         if (m_handle)
@@ -956,6 +958,31 @@ namespace VIDEO
             break;
         }
       }
+      else if (StringUtils::EqualsNoCase(strFileX, "INDEX.BDM")||StringUtils::EqualsNoCase(strFileX, "index.bdmv"))
+      {
+        int j=x+1;
+        while (j < items.Size())
+        {
+          std::string strPathY, strFileY;
+          URIUtils::Split(items[j]->GetPath(), strPathY, strFileY);
+          if (StringUtils::StartsWithNoCase(strPathY, strPathX))
+            items.Remove(j);
+          else
+            j++;
+        }
+        j=x-1;
+        while (j >=0)
+        {
+          std::string strPathY, strFileY;
+          URIUtils::Split(items[j]->GetPath(), strPathY, strFileY);
+          if (StringUtils::StartsWithNoCase(strPathY, strPathX))
+          {
+            items.Remove(j);
+            x--;
+          }
+          j--;
+        }
+      }
       x++;
     }
 
@@ -1439,9 +1466,6 @@ namespace VIDEO
 
     // get and cache thumb images
     std::vector<std::string> artTypes = CVideoThumbLoader::GetArtTypes(ContentToMediaType(content, pItem->m_bIsFolder));
-    std::vector<std::string>::iterator i = find(artTypes.begin(), artTypes.end(), "fanart");
-    if (i != artTypes.end())
-      artTypes.erase(i); // fanart is handled below
     bool lookForThumb = find(artTypes.begin(), artTypes.end(), "thumb") == artTypes.end() &&
                         art.find("thumb") == art.end();
     // find local art
@@ -1478,7 +1502,7 @@ namespace VIDEO
     {
       for (auto& it : pItem->GetVideoInfoTag()->m_coverArt)
       {
-        if (art.find(it.m_type) == art.end())
+        if (std::find(artTypes.begin(), artTypes.end(), it.m_type) != artTypes.end() && art.find(it.m_type) == art.end())
         {
           std::string thumb = CTextureUtils::GetWrappedImageURL(pItem->GetPath(),
                                                                 "video_" + it.m_type);
@@ -1487,11 +1511,10 @@ namespace VIDEO
       }
     }
 
-    // get & save fanart image (treated separately due to it being stored in m_fanart)
-    bool isEpisode = (content == CONTENT_TVSHOWS && !pItem->m_bIsFolder);
-    if (!isEpisode && art.find("fanart") == art.end())
+    // add online fanart (treated separately due to it being stored in m_fanart)
+    if (find(artTypes.begin(), artTypes.end(), "fanart") != artTypes.end() && art.find("fanart") == art.end())
     {
-      std::string fanart = GetFanart(pItem, useLocal);
+      std::string fanart = pItem->GetVideoInfoTag()->m_fanart.GetImageURL();
       if (!fanart.empty())
         art.insert(std::make_pair("fanart", fanart));
     }
@@ -1505,7 +1528,7 @@ namespace VIDEO
       if (aspect.empty())
         // temporary support for XML music video scrapers that share music album scraper bits
         aspect = content == CONTENT_MUSICVIDEOS ? "poster" : "thumb";
-      if (art.find(aspect) != art.end())
+      if (find(artTypes.begin(), artTypes.end(), aspect) == artTypes.end() || art.find(aspect) != art.end())
         continue;
       std::string image = GetImage(url, pItem->GetPath());
       if (!image.empty())
@@ -1536,18 +1559,6 @@ namespace VIDEO
       thumb = URIUtils::AddFileToFolder(strPath, thumb);
     }
     return thumb;
-  }
-
-  std::string CVideoInfoScanner::GetFanart(CFileItem *pItem, bool useLocal)
-  {
-    if (!pItem)
-      return "";
-    std::string fanart = pItem->GetArt("fanart");
-    if (fanart.empty() && useLocal)
-      fanart = pItem->FindLocalArt("fanart.jpg", true);
-    if (fanart.empty())
-      fanart = pItem->GetVideoInfoTag()->m_fanart.GetImageURL();
-    return fanart;
   }
 
   CInfoScanner::INFO_RET
@@ -1990,7 +2001,7 @@ namespace VIDEO
       if (aspect.empty())
         aspect = "thumb";
       std::map<std::string, std::string>& art = seasonArt[url.m_season];
-      if (art.find(aspect) != art.end())
+      if (find(artTypes.begin(), artTypes.end(), aspect) == artTypes.end() || art.find(aspect) != art.end())
         continue;
       std::string image = CScraperUrl::GetThumbURL(url);
       if (!image.empty())
@@ -2063,7 +2074,24 @@ namespace VIDEO
   {
     MOVIELIST movielist;
     CVideoInfoDownloader imdb(scraper);
-    int returncode = imdb.FindMovie(title, year, movielist, progress);
+    
+    //fix for CMCT style names
+    size_t start=0;    //the position actual name should start
+    if(title.at(0)=='[') //CMCT style
+    {
+        start=title.find(']');
+        if(start != std::string::npos) //found end
+        {
+            start++;
+            if(title.at(start)=='.')//skip '.'
+                start++;
+        }
+        if(start>=title.size() || start<0) //don't skip if the '[]' includes the whole filename
+            start=0;
+    }    
+    std::string actualName=title.substr(start);
+    
+    int returncode = imdb.FindMovie(actualName, year, movielist, progress);
     if (returncode < 0 || (returncode == 0 && (m_bStop || !DownloadFailed(progress))))
     { // scraper reported an error, or we had an error and user wants to cancel the scan
       m_bStop = true;

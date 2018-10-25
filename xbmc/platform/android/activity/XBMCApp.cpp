@@ -128,6 +128,7 @@ std::vector<androidPackage> CXBMCApp::m_applications;
 CVideoSyncAndroid* CXBMCApp::m_syncImpl = NULL;
 CEvent CXBMCApp::m_vsyncEvent;
 std::vector<CActivityResultEvent*> CXBMCApp::m_activityResultEvents;
+
 int64_t CXBMCApp::m_frameTimeNanos = 0;
 float CXBMCApp::m_refreshRate = 0.0f;
 
@@ -237,8 +238,6 @@ void CXBMCApp::onResume()
   // Re-request Visible Behind
   if ((m_playback_state & PLAYBACK_STATE_PLAYING) && (m_playback_state & PLAYBACK_STATE_VIDEO))
     RequestVisibleBehind(true);
-
-  g_application.SetRenderGUI(true);
 }
 
 void CXBMCApp::onPause()
@@ -258,7 +257,6 @@ void CXBMCApp::onPause()
     g_application.SwitchToFullScreen(true);
 
   EnableWakeLock(false);
-  g_application.SetRenderGUI(false);
   m_hasReqVisible = false;
 }
 
@@ -1186,10 +1184,21 @@ void CXBMCApp::doFrame(int64_t frameTimeNanos)
 
   // Calculate the time, when next surface buffer should be rendered
   m_frameTimeNanos = frameTimeNanos;
-  if (m_refreshRate)
-    m_frameTimeNanos += static_cast<int64_t>(1500000000ll / m_refreshRate);
 
   m_vsyncEvent.Set();
+}
+
+int64_t CXBMCApp::GetNextFrameTime()
+{
+  if (m_refreshRate > 0.0001f)
+    return m_frameTimeNanos + static_cast<int64_t>(1500000000ll / m_refreshRate);
+  else
+    return m_frameTimeNanos;
+}
+
+float CXBMCApp::GetFrameLatencyMs()
+{
+  return (CurrentHostCounter() - m_frameTimeNanos) * 0.000001;
 }
 
 bool CXBMCApp::WaitVSync(unsigned int milliSeconds)
@@ -1377,12 +1386,14 @@ void CXBMCApp::surfaceCreated(CJNISurfaceHolder holder)
   {
     XBMC_SetupDisplay();
   }
+  g_application.SetRenderGUI(true);
 }
 
 void CXBMCApp::surfaceDestroyed(CJNISurfaceHolder holder)
 {
   android_printf("%s: ", __PRETTY_FUNCTION__);
   // If we have exited XBMC, it no longer exists.
+  g_application.SetRenderGUI(false);
   if (!m_exiting)
   {
     XBMC_DestroyDisplay();
