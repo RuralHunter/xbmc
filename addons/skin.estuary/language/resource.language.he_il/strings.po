@@ -200,10 +200,6 @@ msgctxt "#31050"
 msgid "Press [B]OK[/B] to stop"
 msgstr "לחץ על [B]אישור[/B] כדי לעצור"
 
-msgctxt "#31051"
-msgid "Toggle language"
-msgstr "החלף שפה"
-
 msgctxt "#31052"
 msgid "filtered"
 msgstr "מסונן"
@@ -448,6 +444,10 @@ msgctxt "#31131"
 msgid "Choose skin fanart pack"
 msgstr "בחר חבילת פאנארט למעטפת"
 
+msgctxt "#31132"
+msgid "Select Program"
+msgstr "בחר תוכנית"
+
 msgctxt "#31134"
 msgid "Remaining"
 msgstr "נותר"
@@ -555,3 +555,7 @@ msgstr "שחק את המשחקים האישיים שלך או הורד אחד מ
 msgctxt "#31163"
 msgid "Show Fanart background"
 msgstr "הצג רקע פאנארט"
+
+msgctxt "#31165"
+msgid "Profile name"
+msgstr "שם משתמש"

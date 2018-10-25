@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2017 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "OptionalsReg.h"
@@ -27,6 +15,13 @@
 #include <va/va_drm.h>
 #include "cores/VideoPlayer/DVDCodecs/Video/VAAPI.h"
 #include "cores/VideoPlayer/VideoRenderers/HwDecRender/RendererVAAPIGLES.h"
+
+namespace KODI
+{
+namespace WINDOWING
+{
+namespace GBM
+{
 
 class CVaapiProxy : public VAAPI::IVaapiWinSystem
 {
@@ -69,113 +64,75 @@ VADisplay CVaapiProxy::GetVADisplay()
   return nullptr;
 }
 
-CVaapiProxy* GBM::VaapiProxyCreate()
+CVaapiProxy* VaapiProxyCreate()
 {
   return new CVaapiProxy();
 }
 
-void GBM::VaapiProxyDelete(CVaapiProxy *proxy)
+void VaapiProxyDelete(CVaapiProxy *proxy)
 {
   delete proxy;
 }
 
-void GBM::VaapiProxyConfig(CVaapiProxy *proxy, void *eglDpy)
+void VaapiProxyConfig(CVaapiProxy *proxy, void *eglDpy)
 {
   proxy->vaDpy = proxy->GetVADisplay();
   proxy->eglDisplay = eglDpy;
 }
 
-void GBM::VAAPIRegister(CVaapiProxy *winSystem, bool hevc)
+void VAAPIRegister(CVaapiProxy *winSystem, bool deepColor)
 {
-  VAAPI::CDecoder::Register(winSystem, hevc);
+  VAAPI::CDecoder::Register(winSystem, deepColor);
 }
 
-void GBM::VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &hevc)
+void VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &deepColor)
 {
-  CRendererVAAPI::Register(winSystem, winSystem->vaDpy, winSystem->eglDisplay, general, hevc);
+  CRendererVAAPI::Register(winSystem, winSystem->vaDpy, winSystem->eglDisplay, general, deepColor);
+}
+
+}
+}
 }
 
 #else
+
+namespace KODI
+{
+namespace WINDOWING
+{
+namespace GBM
+{
 
 class CVaapiProxy
 {
 };
 
-CVaapiProxy* GBM::VaapiProxyCreate()
+CVaapiProxy* VaapiProxyCreate()
 {
   return nullptr;
 }
 
-void GBM::VaapiProxyDelete(CVaapiProxy *proxy)
+void VaapiProxyDelete(CVaapiProxy *proxy)
 {
 }
 
-void GBM::VaapiProxyConfig(CVaapiProxy *proxy, void *eglDpy)
-{
-
-}
-
-void GBM::VAAPIRegister(CVaapiProxy *winSystem, bool hevc)
+void VaapiProxyConfig(CVaapiProxy *proxy, void *eglDpy)
 {
 
 }
 
-void GBM::VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &hevc)
+void VAAPIRegister(CVaapiProxy *winSystem, bool deepColor)
 {
 
 }
-#endif
 
-//-----------------------------------------------------------------------------
-// ALSA
-//-----------------------------------------------------------------------------
+void VAAPIRegisterRender(CVaapiProxy *winSystem, bool &general, bool &deepColor)
+{
 
-#ifdef HAS_ALSA
-#include "cores/AudioEngine/Sinks/AESinkALSA.h"
-bool GBM::ALSARegister()
-{
-  CAESinkALSA::Register();
-  return true;
 }
-#else
-bool GBM::ALSARegister()
-{
-  return false;
-}
-#endif
 
-//-----------------------------------------------------------------------------
-// PulseAudio
-//-----------------------------------------------------------------------------
+}
+}
+}
 
-#ifdef HAS_PULSEAUDIO
-#include "cores/AudioEngine/Sinks/AESinkPULSE.h"
-bool GBM::PulseAudioRegister()
-{
-  bool ret = CAESinkPULSE::Register();
-  return ret;
-}
-#else
-bool GBM::PulseAudioRegister()
-{
-  return false;
-}
-#endif
-
-//-----------------------------------------------------------------------------
-// sndio
-//-----------------------------------------------------------------------------
-
-#ifdef HAS_SNDIO
-#include "cores/AudioEngine/Sinks/AESinkSNDIO.h"
-bool GBM::SndioRegister()
-{
-  CAESinkSNDIO::Register();
-  return true;
-}
-#else
-bool GBM::SndioRegister()
-{
-  return false;
-}
 #endif

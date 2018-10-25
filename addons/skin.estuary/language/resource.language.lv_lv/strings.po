@@ -188,6 +188,10 @@ msgctxt "#31065"
 msgid "Video playlist"
 msgstr "Video spēļsaraksts"
 
+msgctxt "#31067"
+msgid "Event log"
+msgstr "Notikumu žurnāls"
+
 msgctxt "#31069"
 msgid "Last Updated"
 msgstr "Pēdējie jaunumi"
@@ -263,3 +267,7 @@ msgstr "Pikseļu formāts"
 msgctxt "#31142"
 msgid "Play speed"
 msgstr "Atskaņošanas ātrums"
+
+msgctxt "#31165"
+msgid "Profile name"
+msgstr "Profila vārds"

@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include <limits.h>
@@ -92,16 +80,12 @@ void CThread::SetThreadInfo()
   m_ThreadOpaque.LwpId = syscall(SYS_gettid);
 #endif
 
-#if defined(HAVE_PTHREAD_SETNAME_NP)
-#ifdef TARGET_DARWIN
+#if defined(TARGET_DARWIN)
   pthread_setname_np(m_ThreadName.c_str());
-#else
+#elif defined(TARGET_LINUX) && defined(__GLIBC__)
   pthread_setname_np(m_ThreadId, m_ThreadName.c_str());
 #endif
-#elif defined(HAVE_PTHREAD_SET_NAME_NP)
-  pthread_set_name_np(m_ThreadId, m_ThreadName.c_str());
-#endif
-    
+
 #ifdef RLIMIT_NICE
   // get user max prio
   struct rlimit limit;
@@ -164,7 +148,7 @@ bool CThread::SetPriority(const int iPriority)
 
   // wait until thread is running, it needs to get its lwp id
   m_StartEvent.Wait();
-  
+
   CSingleLock lock(m_CriticalSection);
 
   // get min prio for SCHED_RR
@@ -223,7 +207,7 @@ int CThread::GetPriority()
   m_StartEvent.Wait();
 
   CSingleLock lock(m_CriticalSection);
-  
+
   int appNice = getpriority(PRIO_PROCESS, getpid());
   int prio = getpriority(PRIO_PROCESS, m_ThreadOpaque.LwpId);
   iReturn = appNice - prio;
@@ -241,10 +225,10 @@ bool CThread::WaitForThreadExit(unsigned int milliseconds)
 int64_t CThread::GetAbsoluteUsage()
 {
   CSingleLock lock(m_CriticalSection);
-  
+
   if (!m_ThreadId)
   return 0;
-  
+
   int64_t time = 0;
 #ifdef TARGET_DARWIN
   thread_basic_info threadInfo;

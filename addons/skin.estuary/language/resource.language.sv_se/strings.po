@@ -200,10 +200,6 @@ msgctxt "#31050"
 msgid "Press [B]OK[/B] to stop"
 msgstr "Tryck på [B]OK[/B] för att stoppa"
 
-msgctxt "#31051"
-msgid "Toggle language"
-msgstr "Växla språk"
-
 msgctxt "#31052"
 msgid "filtered"
 msgstr "filtrerad"
@@ -448,6 +444,14 @@ msgctxt "#31131"
 msgid "Choose skin fanart pack"
 msgstr "Välj skal-fanart paket"
 
+msgctxt "#31132"
+msgid "Select Program"
+msgstr "Välj program"
+
+msgctxt "#31133"
+msgid "Select Resolution"
+msgstr "Välj upplösning"
+
 msgctxt "#31134"
 msgid "Remaining"
 msgstr "Återstående"
@@ -555,3 +559,15 @@ msgstr "Spela dina egna spel eller ladda ned någon av de många speltillägg fr
 msgctxt "#31163"
 msgid "Show Fanart background"
 msgstr "Visa Fanart-bakgrund"
+
+msgctxt "#31164"
+msgid "Choose kind of profile identification"
+msgstr "Välj typ av profilidentifiering"
+
+msgctxt "#31165"
+msgid "Profile name"
+msgstr "Profilnamn"
+
+msgctxt "#31166"
+msgid "Profile avatar"
+msgstr "Profil avatar"

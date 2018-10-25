@@ -1,29 +1,17 @@
 /*
- *      Copyright (c) 2007 d4rk
- *      Copyright (C) 2007-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (c) 2007 d4rk
+ *  Copyright (C) 2007-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "../RenderFlags.h"
 #include "YUV2RGBShaderGLES.h"
 #include "YUVMatrix.h"
 #include "settings/AdvancedSettings.h"
-#include "guilib/TransformMatrix.h"
+#include "utils/TransformMatrix.h"
 #include "utils/log.h"
 #include "utils/GLUtils.h"
 
@@ -32,14 +20,15 @@
 
 using namespace Shaders;
 
-static void CalculateYUVMatrixGLES(GLfloat      res[4][4]
-                               , unsigned int flags
+static void CalculateYUVMatrixGLES(GLfloat     res[4][4]
+                               , unsigned int  flags
                                , EShaderFormat format
-                               , float        black
-                               , float        contrast)
+                               , float         black
+                               , float         contrast
+                               , bool          limited)
 {
   TransformMatrix matrix;
-  CalculateYUVMatrix(matrix, flags, format, black, contrast, false);
+  CalculateYUVMatrix(matrix, flags, format, black, contrast, limited);
 
   for(int row = 0; row < 3; row++)
     for(int col = 0; col < 4; col++)
@@ -84,6 +73,8 @@ BaseYUV2RGBGLSLShader::BaseYUV2RGBGLSLShader(unsigned flags, EShaderFormat forma
   m_proj = nullptr;
   m_model = nullptr;
   m_alpha = 1.0;
+
+  m_convertFullRange = false;
 
   if (m_format == SHADER_YV12 ||
       m_format == SHADER_YV12_9 ||
@@ -142,7 +133,7 @@ bool BaseYUV2RGBGLSLShader::OnEnabled()
 
   GLfloat matrix[4][4];
   // keep video levels
-  CalculateYUVMatrixGLES(matrix, m_flags, m_format, m_black, m_contrast);
+  CalculateYUVMatrixGLES(matrix, m_flags, m_format, m_black, m_contrast, !m_convertFullRange);
 
   glUniformMatrix4fv(m_hMatrix, 1, GL_FALSE, (GLfloat*)matrix);
   glUniformMatrix4fv(m_hProj,  1, GL_FALSE, m_proj);

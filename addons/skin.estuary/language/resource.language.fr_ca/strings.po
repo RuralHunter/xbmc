@@ -200,10 +200,6 @@ msgctxt "#31050"
 msgid "Press [B]OK[/B] to stop"
 msgstr "Peser sur [B]OK[/B] pour arrêter"
 
-msgctxt "#31051"
-msgid "Toggle language"
-msgstr "Changer la langue"
-
 msgctxt "#31052"
 msgid "filtered"
 msgstr "filtré"
@@ -448,6 +444,14 @@ msgctxt "#31131"
 msgid "Choose skin fanart pack"
 msgstr "Choisir le paquet de fanart de l’habillage"
 
+msgctxt "#31132"
+msgid "Select Program"
+msgstr "Choisir un programme"
+
+msgctxt "#31133"
+msgid "Select Resolution"
+msgstr "Sélectionner la résolution"
+
 msgctxt "#31134"
 msgid "Remaining"
 msgstr "Restant"
@@ -555,3 +559,15 @@ msgstr "Jouez à vos jeux personnels ou téléchargez l’un des nombreux addici
 msgctxt "#31163"
 msgid "Show Fanart background"
 msgstr "Afficher le fanart en arrière-plan"
+
+msgctxt "#31164"
+msgid "Choose kind of profile identification"
+msgstr "Choisir le type d’identification du profile"
+
+msgctxt "#31165"
+msgid "Profile name"
+msgstr "Nom du profil"
+
+msgctxt "#31166"
+msgid "Profile avatar"
+msgstr "Avatar du profile"

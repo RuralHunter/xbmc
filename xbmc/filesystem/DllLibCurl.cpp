@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "DllLibCurl.h"
@@ -25,36 +13,6 @@
 #include "utils/log.h"
 
 #include <assert.h>
-
-#ifdef HAVE_OPENSSL
-#include "openssl/crypto.h"
-#include "threads/Thread.h"
-
-static CCriticalSection** m_sslLockArray = NULL;
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-  void ssl_lock_callback(int mode, int type, char* file, int line)
-  {
-    if (!m_sslLockArray)
-      return;
-
-    if (mode & CRYPTO_LOCK)
-      m_sslLockArray[type]->lock();
-    else
-      m_sslLockArray[type]->unlock();
-  }
-
-  unsigned long ssl_thread_id() { return (unsigned long) CThread::GetCurrentThreadId(); }
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // HAVE_OPENSSL
 
 namespace XCURL
 {
@@ -172,32 +130,12 @@ DllLibCurlGlobal::DllLibCurlGlobal()
   {
     CLog::Log(LOGERROR, "Error initializing libcurl");
   }
-
-#if defined(HAS_CURL_STATIC)
-  // Initialize ssl locking array
-  m_sslLockArray = new CCriticalSection*[CRYPTO_num_locks()];
-  for (int i = 0; i < CRYPTO_num_locks(); i++)
-    m_sslLockArray[i] = new CCriticalSection;
-
-  crypto_set_id_callback((unsigned long (*)())ssl_thread_id);
-  crypto_set_locking_callback((void (*)(int, int, const char*, int))ssl_lock_callback);
-#endif
 }
 
 DllLibCurlGlobal::~DllLibCurlGlobal()
 {
   // close libcurl
   curl_global_cleanup();
-
-#if defined(HAS_CURL_STATIC)
-  // Cleanup ssl locking array
-  crypto_set_id_callback(NULL);
-  crypto_set_locking_callback(NULL);
-  for (int i = 0; i < CRYPTO_num_locks(); i++)
-    delete m_sslLockArray[i];
-
-  delete[] m_sslLockArray;
-#endif
 }
 
 void DllLibCurlGlobal::CheckIdle()

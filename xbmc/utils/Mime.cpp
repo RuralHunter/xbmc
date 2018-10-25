@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2012-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2012-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include <algorithm>
@@ -29,7 +17,7 @@
 #include "utils/StringUtils.h"
 #include "filesystem/CurlFile.h"
 
-std::map<std::string, std::string> fillMimeTypes()
+static std::map<std::string, std::string> fillMimeTypes()
 {
   std::map<std::string, std::string> mimeTypes;
 
@@ -154,6 +142,8 @@ std::map<std::string, std::string> fillMimeTypes()
   mimeTypes.insert(std::pair<std::string, std::string>("gzip",      "application/x-gzip"));
   mimeTypes.insert(std::pair<std::string, std::string>("h",         "text/plain"));
   mimeTypes.insert(std::pair<std::string, std::string>("hdf",       "application/x-hdf"));
+  mimeTypes.insert(std::pair<std::string, std::string>("heic",      "image/heic"));
+  mimeTypes.insert(std::pair<std::string, std::string>("heif",      "image/heif"));
   mimeTypes.insert(std::pair<std::string, std::string>("help",      "application/x-helpfile"));
   mimeTypes.insert(std::pair<std::string, std::string>("hgl",       "application/vnd.hp-hpgl"));
   mimeTypes.insert(std::pair<std::string, std::string>("hh",        "text/plain"));
@@ -502,6 +492,7 @@ std::map<std::string, std::string> fillMimeTypes()
   mimeTypes.insert(std::pair<std::string, std::string>("xpix",      "application/x-vnd.ls-xpix"));
   mimeTypes.insert(std::pair<std::string, std::string>("xpm",       "image/xpm"));
   mimeTypes.insert(std::pair<std::string, std::string>("x-png",     "image/png"));
+  mimeTypes.insert(std::pair<std::string, std::string>("xspf",      "application/xspf+xml"));
   mimeTypes.insert(std::pair<std::string, std::string>("xsr",       "video/x-amt-showrun"));
   mimeTypes.insert(std::pair<std::string, std::string>("xvid",      "video/x-msvideo"));
   mimeTypes.insert(std::pair<std::string, std::string>("xwd",       "image/x-xwd"));
@@ -536,7 +527,7 @@ std::string CMime::GetMimeType(const std::string &extension)
 
 std::string CMime::GetMimeType(const CFileItem &item)
 {
-  std::string path = item.GetPath();
+  std::string path = item.GetDynPath();
   if (item.HasVideoInfoTag() && !item.GetVideoInfoTag()->GetPath().empty())
     path = item.GetVideoInfoTag()->GetPath();
   else if (item.HasMusicInfoTag() && !item.GetMusicInfoTag()->GetURL().empty())
@@ -547,7 +538,7 @@ std::string CMime::GetMimeType(const CFileItem &item)
 
 std::string CMime::GetMimeType(const CURL &url, bool lookup)
 {
-  
+
   std::string strMimeType;
 
   if( url.IsProtocol("shout") || url.IsProtocol("http") || url.IsProtocol("https"))

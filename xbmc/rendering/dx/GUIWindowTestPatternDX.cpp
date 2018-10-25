@@ -1,23 +1,11 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
  *      Test patterns designed by Ofer LaOr - hometheater.co.il
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "GUIWindowTestPatternDX.h"
@@ -75,7 +63,7 @@ void CGUIWindowTestPatternDX::DrawVerticalLines(int top, int left, int bottom, i
   UpdateVertexBuffer(vert, p);
 
   ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
-  CGUIShaderDX* pGUIShader = DX::Windowing().GetGUIShader();
+  CGUIShaderDX* pGUIShader = DX::Windowing()->GetGUIShader();
 
   pGUIShader->Begin(SHADER_METHOD_RENDER_DEFAULT);
   unsigned stride = sizeof(Vertex), offset = 0;
@@ -106,7 +94,7 @@ void CGUIWindowTestPatternDX::DrawHorizontalLines(int top, int left, int bottom,
   UpdateVertexBuffer(vert, p);
 
   ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
-  CGUIShaderDX* pGUIShader = DX::Windowing().GetGUIShader();
+  CGUIShaderDX* pGUIShader = DX::Windowing()->GetGUIShader();
 
   pGUIShader->Begin(SHADER_METHOD_RENDER_DEFAULT);
   unsigned stride = sizeof(Vertex), offset = 0;
@@ -148,7 +136,7 @@ void CGUIWindowTestPatternDX::DrawCheckers(int top, int left, int bottom, int ri
   UpdateVertexBuffer(vert, i);
 
   ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
-  CGUIShaderDX* pGUIShader = DX::Windowing().GetGUIShader();
+  CGUIShaderDX* pGUIShader = DX::Windowing()->GetGUIShader();
 
   pGUIShader->Begin(SHADER_METHOD_RENDER_DEFAULT);
   unsigned stride = sizeof(Vertex), offset = 0;
@@ -208,7 +196,7 @@ void CGUIWindowTestPatternDX::DrawContrastBrightnessPattern(int top, int left, i
   CD3DHelper::XMStoreColor(&xcolor_black, color_black);
 
   // draw border lines
-  Vertex vert[] = 
+  Vertex vert[] =
   {
     { XMFLOAT3((float)left, y5p, 0.5f), xcolor_white, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
     { XMFLOAT3(x50p, y5p, 0.5f), xcolor_white, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
@@ -231,7 +219,7 @@ void CGUIWindowTestPatternDX::DrawContrastBrightnessPattern(int top, int left, i
   UpdateVertexBuffer(vert, ARRAYSIZE(vert));
 
   ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
-  CGUIShaderDX* pGUIShader = DX::Windowing().GetGUIShader();
+  CGUIShaderDX* pGUIShader = DX::Windowing()->GetGUIShader();
 
   pGUIShader->Begin(SHADER_METHOD_RENDER_DEFAULT);
   unsigned stride = sizeof(Vertex), offset = 0;
@@ -305,7 +293,7 @@ void CGUIWindowTestPatternDX::DrawCircleEx(float originX, float originY, float r
   UpdateVertexBuffer(vert, ARRAYSIZE(vert));
 
   ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
-  CGUIShaderDX* pGUIShader = DX::Windowing().GetGUIShader();
+  CGUIShaderDX* pGUIShader = DX::Windowing()->GetGUIShader();
 
   pGUIShader->Begin(SHADER_METHOD_RENDER_DEFAULT);
   unsigned stride = sizeof(Vertex), offset = 0;
@@ -327,7 +315,7 @@ void CGUIWindowTestPatternDX::BeginRender()
 
 void CGUIWindowTestPatternDX::EndRender()
 {
-  DX::Windowing().GetGUIShader()->RestoreBuffers();
+  DX::Windowing()->GetGUIShader()->RestoreBuffers();
 }
 
 void CGUIWindowTestPatternDX::DrawRectangle(float x, float y, float x2, float y2, DWORD color)
@@ -335,7 +323,7 @@ void CGUIWindowTestPatternDX::DrawRectangle(float x, float y, float x2, float y2
   XMFLOAT4 float4;
   CD3DHelper::XMStoreColor(&float4, color);
 
-  Vertex vert[] = 
+  Vertex vert[] =
   {
     { XMFLOAT3( x, y, 0.5f), float4, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
     { XMFLOAT3(x2, y, 0.5f), float4, XMFLOAT2(0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
@@ -348,7 +336,7 @@ void CGUIWindowTestPatternDX::DrawRectangle(float x, float y, float x2, float y2
   UpdateVertexBuffer(vert, ARRAYSIZE(vert));
 
   ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
-  CGUIShaderDX* pGUIShader = DX::Windowing().GetGUIShader();
+  CGUIShaderDX* pGUIShader = DX::Windowing()->GetGUIShader();
 
   pGUIShader->Begin(SHADER_METHOD_RENDER_DEFAULT);
   unsigned stride = sizeof(Vertex), offset = 0;
@@ -375,7 +363,7 @@ void CGUIWindowTestPatternDX::UpdateVertexBuffer(Vertex *vertices, unsigned coun
     }
     return;
   }
-  else // update 
+  else // update
   {
     ComPtr<ID3D11DeviceContext> pContext = DX::DeviceResources::Get()->GetD3DContext();
     D3D11_MAPPED_SUBRESOURCE res;

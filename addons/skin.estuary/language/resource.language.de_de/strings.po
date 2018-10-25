@@ -114,7 +114,7 @@ msgstr "Ansicht"
 
 msgctxt "#31024"
 msgid "Choose rating to display for media items"
-msgstr "Bewertung für Anzeige von Medien-Inhalte wählen"
+msgstr "Bewertung, die für Medien-Inhalte angezeigt werden soll"
 
 msgctxt "#31025"
 msgid "No favourites found. You can add any item from media views to this list by using the context menu."
@@ -200,10 +200,6 @@ msgctxt "#31050"
 msgid "Press [B]OK[/B] to stop"
 msgstr "[B]OK[/B] zum Stoppen drücken"
 
-msgctxt "#31051"
-msgid "Toggle language"
-msgstr "Sprache umstellen"
-
 msgctxt "#31052"
 msgid "filtered"
 msgstr "gefiltert"
@@ -274,7 +270,7 @@ msgstr "Filmkollektionen"
 
 msgctxt "#31079"
 msgid "Cast not available"
-msgstr "Bestzung nicht verfügbar"
+msgstr "Besetzung nicht verfügbar"
 
 msgctxt "#31080"
 msgid "Ends at"
@@ -448,6 +444,14 @@ msgctxt "#31131"
 msgid "Choose skin fanart pack"
 msgstr "Fanart-Sammlung für Skin wählen"
 
+msgctxt "#31132"
+msgid "Select Program"
+msgstr "Programm auswählen"
+
+msgctxt "#31133"
+msgid "Select Resolution"
+msgstr "Auflösung wählen"
+
 msgctxt "#31134"
 msgid "Remaining"
 msgstr "Verbleibend"
@@ -555,3 +559,15 @@ msgstr "Spielen oder eines von vielen Spiele-Addons aus dem offiziellen Reposito
 msgctxt "#31163"
 msgid "Show Fanart background"
 msgstr "Fanart-Hintergrund anzeigen"
+
+msgctxt "#31164"
+msgid "Choose kind of profile identification"
+msgstr "Art der Profil-Identifikation auswählen"
+
+msgctxt "#31165"
+msgid "Profile name"
+msgstr "Profil-Name"
+
+msgctxt "#31166"
+msgid "Profile avatar"
+msgstr "Profil-Avatar"

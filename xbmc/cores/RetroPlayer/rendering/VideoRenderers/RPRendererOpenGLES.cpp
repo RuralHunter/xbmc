@@ -1,24 +1,14 @@
 /*
- *      Copyright (C) 2017 Team Kodi
- *      http://kodi.tv
+ *  Copyright (C) 2017-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this Program; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "RPRendererOpenGLES.h"
+#include "cores/RetroPlayer/buffers/RenderBufferOpenGLES.h"
+#include "cores/RetroPlayer/buffers/RenderBufferPoolOpenGLES.h"
 #include "cores/RetroPlayer/rendering/RenderContext.h"
 #include "cores/RetroPlayer/rendering/RenderVideoSettings.h"
 #include "utils/GLUtils.h"
@@ -47,170 +37,6 @@ CRPBaseRenderer *CRendererFactoryOpenGLES::CreateRenderer(const CRenderSettings 
 RenderBufferPoolVector CRendererFactoryOpenGLES::CreateBufferPools(CRenderContext &context)
 {
   return { std::make_shared<CRenderBufferPoolOpenGLES>(context) };
-}
-
-// --- CRenderBufferOpenGLES ---------------------------------------------------
-
-CRenderBufferOpenGLES::CRenderBufferOpenGLES(CRenderContext &context,
-                                             GLuint pixeltype,
-                                             GLuint internalformat,
-                                             GLuint pixelformat,
-                                             GLuint bpp,
-                                             unsigned int width,
-                                             unsigned int height) :
-  m_context(context),
-  m_pixeltype(pixeltype),
-  m_internalformat(internalformat),
-  m_pixelformat(pixelformat),
-  m_bpp(bpp),
-  m_width(width),
-  m_height(height)
-{
-}
-
-CRenderBufferOpenGLES::~CRenderBufferOpenGLES()
-{
-  DeleteTexture();
-}
-
-void CRenderBufferOpenGLES::CreateTexture()
-{
-  glGenTextures(1, &m_textureId);
-
-  glBindTexture(m_textureTarget, m_textureId);
-
-  glTexImage2D(m_textureTarget, 0, m_internalformat, m_width, m_height, 0, m_pixelformat, m_pixeltype, NULL);
-
-  glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(m_textureTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
-
-bool CRenderBufferOpenGLES::UploadTexture()
-{
-  if (!glIsTexture(m_textureId))
-    CreateTexture();
-
-  glBindTexture(m_textureTarget, m_textureId);
-
-  const int stride = GetFrameSize() / m_height;
-
-  glPixelStorei(GL_UNPACK_ALIGNMENT, m_bpp);
-
-  if (m_bpp == 4 && m_pixelformat == GL_RGBA)
-  {
-    // XOR Swap RGBA -> BGRA
-    // GLES 2.0 doesn't support strided textures (unless GL_UNPACK_ROW_LENGTH_EXT is supported)
-    uint8_t* pixels = const_cast<uint8_t*>(m_data.data());
-    for (unsigned int y = 0; y < m_height; ++y, pixels += stride)
-    {
-      for (int x = 0; x < stride; x += 4)
-        std::swap(pixels[x], pixels[x + 2]);
-      glTexSubImage2D(m_textureTarget, 0, 0, y, m_width, 1, m_pixelformat, m_pixeltype, pixels);
-    }
-  }
-#ifdef GL_UNPACK_ROW_LENGTH_EXT
-  else if (m_context.IsExtSupported("GL_EXT_unpack_subimage"))
-  {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, stride / m_bpp);
-    glTexSubImage2D(m_textureTarget, 0, 0, 0, m_width, m_height, m_pixelformat, m_pixeltype, m_data.data());
-    glPixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
-  }
-#endif
-  else
-  {
-    uint8_t* pixels = const_cast<uint8_t*>(m_data.data());
-    for (unsigned int y = 0; y < m_height; ++y, pixels += stride)
-      glTexSubImage2D(m_textureTarget, 0, 0, y, m_width, 1, m_pixelformat, m_pixeltype, pixels);
-  }
-
-  return true;
-}
-
-void CRenderBufferOpenGLES::DeleteTexture()
-{
-  if (glIsTexture(m_textureId))
-    glDeleteTextures(1, &m_textureId);
-
-  m_textureId = 0;
-}
-
-// --- CRenderBufferPoolOpenGLES -----------------------------------------------
-
-CRenderBufferPoolOpenGLES::CRenderBufferPoolOpenGLES(CRenderContext &context)
-  : m_context(context)
-{
-}
-
-bool CRenderBufferPoolOpenGLES::IsCompatible(const CRenderVideoSettings &renderSettings) const
-{
-  if (!CRPRendererOpenGLES::SupportsScalingMethod(renderSettings.GetScalingMethod()))
-    return false;
-
-  return true;
-}
-
-IRenderBuffer *CRenderBufferPoolOpenGLES::CreateRenderBuffer(void *header /* = nullptr */)
-{
-  return new CRenderBufferOpenGLES(m_context,
-                                   m_pixeltype,
-                                   m_internalformat,
-                                   m_pixelformat,
-                                   m_bpp,
-                                   m_width,
-                                   m_height);
-}
-
-bool CRenderBufferPoolOpenGLES::ConfigureInternal()
-{
-  switch (m_format)
-  {
-  case AV_PIX_FMT_0RGB32:
-  {
-    m_pixeltype = GL_UNSIGNED_BYTE;
-    if (m_context.IsExtSupported("GL_EXT_texture_format_BGRA8888") ||
-        m_context.IsExtSupported("GL_IMG_texture_format_BGRA8888"))
-    {
-      m_internalformat = GL_BGRA_EXT;
-      m_pixelformat = GL_BGRA_EXT;
-    }
-    else if (m_context.IsExtSupported("GL_APPLE_texture_format_BGRA8888"))
-    {
-      // Apple's implementation does not conform to spec. Instead, they require
-      // differing format/internalformat, more like GL.
-      m_internalformat = GL_RGBA;
-      m_pixelformat = GL_BGRA_EXT;
-    }
-    else
-    {
-      m_internalformat = GL_RGBA;
-      m_pixelformat = GL_RGBA;
-    }
-    m_bpp = sizeof(uint32_t);
-    return true;
-  }
-  case AV_PIX_FMT_RGB555:
-  {
-    m_pixeltype = GL_UNSIGNED_SHORT_5_5_5_1;
-    m_internalformat = GL_RGB;
-    m_pixelformat = GL_RGB;
-    m_bpp = sizeof(uint16_t);
-    return true;
-  }
-  case AV_PIX_FMT_RGB565:
-  {
-    m_pixeltype = GL_UNSIGNED_SHORT_5_6_5;
-    m_internalformat = GL_RGB;
-    m_pixelformat = GL_RGB;
-    m_bpp = sizeof(uint16_t);
-    return true;
-  }
-  default:
-    break;
-  }
-
-  return false;
 }
 
 // --- CRPRendererOpenGLES -----------------------------------------------------
@@ -259,13 +85,12 @@ void CRPRendererOpenGLES::FlushInternal()
   glFinish();
 }
 
-bool CRPRendererOpenGLES::Supports(ERENDERFEATURE feature) const
+bool CRPRendererOpenGLES::Supports(RENDERFEATURE feature) const
 {
-  if (feature == RENDERFEATURE_STRETCH         ||
-      feature == RENDERFEATURE_ZOOM            ||
-      feature == RENDERFEATURE_VERTICAL_SHIFT  ||
-      feature == RENDERFEATURE_PIXEL_RATIO     ||
-      feature == RENDERFEATURE_ROTATION)
+  if (feature == RENDERFEATURE::STRETCH         ||
+      feature == RENDERFEATURE::ZOOM            ||
+      feature == RENDERFEATURE::PIXEL_RATIO     ||
+      feature == RENDERFEATURE::ROTATION)
   {
     return true;
   }
@@ -273,10 +98,10 @@ bool CRPRendererOpenGLES::Supports(ERENDERFEATURE feature) const
   return false;
 }
 
-bool CRPRendererOpenGLES::SupportsScalingMethod(ESCALINGMETHOD method)
+bool CRPRendererOpenGLES::SupportsScalingMethod(SCALINGMETHOD method)
 {
-  if (method == VS_SCALINGMETHOD_NEAREST ||
-      method == VS_SCALINGMETHOD_LINEAR)
+  if (method == SCALINGMETHOD::NEAREST ||
+      method == SCALINGMETHOD::LINEAR)
   {
     return true;
   }
@@ -421,17 +246,17 @@ void CRPRendererOpenGLES::Render(uint8_t alpha)
 
   CRect rect = m_sourceRect;
 
-  rect.x1 /= m_sourceWidth;
-  rect.x2 /= m_sourceWidth;
-  rect.y1 /= m_sourceHeight;
-  rect.y2 /= m_sourceHeight;
+  rect.x1 /= renderBuffer->GetWidth();
+  rect.x2 /= renderBuffer->GetWidth();
+  rect.y1 /= renderBuffer->GetHeight();
+  rect.y2 /= renderBuffer->GetHeight();
 
   const uint32_t color = (alpha << 24) | 0xFFFFFF;
 
   glBindTexture(m_textureTarget, renderBuffer->TextureID());
 
   GLint filter = GL_NEAREST;
-  if (GetRenderSettings().VideoSettings().GetScalingMethod() == VS_SCALINGMETHOD_LINEAR)
+  if (GetRenderSettings().VideoSettings().GetScalingMethod() == SCALINGMETHOD::LINEAR)
     filter = GL_LINEAR;
   glTexParameteri(m_textureTarget, GL_TEXTURE_MAG_FILTER, filter);
   glTexParameteri(m_textureTarget, GL_TEXTURE_MIN_FILTER, filter);

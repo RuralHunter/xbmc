@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #pragma once
@@ -106,8 +94,7 @@ namespace XBMCAddon
       }
 #endif
 
-      //! @todo Switch to 'override' usage once 14.04 (Trusty) hits EOL. swig <3.0 doesn't understand C++11
-      virtual ~ListItem();
+      ~ListItem() override;
 
 #ifdef DOXYGEN_SHOULD_USE_THIS
       ///
@@ -804,13 +791,13 @@ namespace XBMCAddon
 #ifdef DOXYGEN_SHOULD_USE_THIS
       ///
       /// \ingroup python_xbmcgui_listitem
-      /// @brief \python_func{ addAvailableThumb(images) }
+      /// @brief \python_func{ addAvailableArtwork(images) }
       ///-----------------------------------------------------------------------
-      /// @brief Add a thumb to available thumbs (needed for scrapers)
+      /// @brief Add an image to available artworks (needed for scrapers)
       ///
       /// @param url            string (image path url)
-      /// @param aspect         [opt] string (image type)
-      /// @param referrer       [opt] string (referr url)
+      /// @param art_type       string (image type)
+      /// @param referrer       [opt] string (referrer url)
       /// @param cache          [opt] string (filename in cache)
       /// @param post           [opt] bool (use post to retrieve the image, default false)
       /// @param isgz           [opt] bool (use gzip to retrieve the image, default false)
@@ -822,13 +809,13 @@ namespace XBMCAddon
       /// **Example:**
       /// ~~~~~~~~~~~~~{.py}
       /// ...
-      /// listitem.addAvailableThumb(path_to_image_1, "1.77")
+      /// listitem.addAvailableArtwork(path_to_image_1, "thumb")
       /// ...
       /// ~~~~~~~~~~~~~
       ///
-      addAvailableThumb(...);
+      addAvailableArtwork(...);
 #else
-      void addAvailableThumb(std::string url, std::string aspect = "", std::string referrer = "", std::string cache = "", bool post = false, bool isgz = false, int season = -1);
+      void addAvailableArtwork(std::string url, std::string art_type = "", std::string referrer = "", std::string cache = "", bool post = false, bool isgz = false, int season = -1);
 #endif
 
 #ifdef DOXYGEN_SHOULD_USE_THIS
@@ -943,6 +930,31 @@ namespace XBMCAddon
       setProperty(...);
 #else
       void setProperty(const char * key, const String& value);
+#endif
+
+#ifdef DOXYGEN_SHOULD_USE_THIS
+      ///
+      /// \ingroup python_xbmcgui_listitem
+      /// @brief \python_func{ setProperties(values) }
+      ///-----------------------------------------------------------------------
+      /// Sets multiple properties for listitem's
+      ///
+      /// @param values             dictionary - pairs of `{ label: value }`.
+      ///
+      /// @python_v18 New function added.
+      ///
+      ///-----------------------------------------------------------------------
+      /// **Example:**
+      /// ~~~~~~~~~~~~~{.py}
+      /// ...
+      /// # setProperties(values)
+      /// listitem.setProperties({ 'AspectRatio': '1.85', 'StartOffset' : '256.4' })
+      /// ...
+      /// ~~~~~~~~~~~~~
+      ///
+      setProperties(...);
+#else
+      void setProperties(const Properties& dictionary);
 #endif
 
 #ifdef DOXYGEN_SHOULD_USE_THIS

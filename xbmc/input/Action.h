@@ -1,22 +1,11 @@
 /*
- *      Copyright (C) 2005-2017 Team Kodi
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this Program; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
+
 #pragma once
 
 #include <string>
@@ -32,6 +21,7 @@ class CKey;
 class CAction
 {
 public:
+  CAction();
   CAction(int actionID, float amount1 = 1.0f, float amount2 = 0.0f, const std::string &name = "", unsigned int holdTime = 0);
   CAction(int actionID, wchar_t unicode);
   CAction(int actionID, unsigned int state, float posX, float posY, float offsetX, float offsetY, float velocityX = 0.0f, float velocityY = 0.0f, const std::string &name = "");
@@ -74,6 +64,10 @@ public:
    */
   float GetAmount(unsigned int index = 0) const { return (index < max_amounts) ? m_amount[index] : 0; };
 
+  /*! \brief Reset all amount values to zero
+   */
+  void ClearAmount();
+
   /*! \brief Unicode value associated with this action
    \return unicode value associated with this action, for keyboard input.
    */
@@ -101,12 +95,12 @@ private:
   std::string   m_name;
 
   static const unsigned int max_amounts = 6; // Must be at least 6
-  float        m_amount[max_amounts];
+  float        m_amount[max_amounts] = {};
 
-  float        m_repeat;
-  unsigned int m_holdTime;
-  unsigned int m_buttonCode;
-  wchar_t      m_unicode;
+  float        m_repeat = 0.0f;
+  unsigned int m_holdTime = 0;
+  unsigned int m_buttonCode = 0;
+  wchar_t      m_unicode = 0;
   std::string  m_text;
 };
 

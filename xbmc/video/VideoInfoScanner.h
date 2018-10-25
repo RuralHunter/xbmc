@@ -1,23 +1,12 @@
-#pragma once
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
+
+#pragma once
 
 #include <set>
 #include <string>
@@ -109,7 +98,6 @@ namespace VIDEO
      */
     static void GetSeasonThumbs(const CVideoInfoTag &show, std::map<int, std::map<std::string, std::string> > &art, const std::vector<std::string> &artTypes, bool useLocal = true);
     static std::string GetImage(const CScraperUrl::SUrlEntry &image, const std::string& itemPath);
-    static std::string GetFanart(CFileItem *pItem, bool useLocal);
 
     bool EnumerateEpisodeItem(const CFileItem *item, EPISODELIST& episodeList);
 
@@ -131,13 +119,23 @@ namespace VIDEO
     bool ProgressCancelled(CGUIDialogProgress* progress, int heading, const std::string &line1);
 
     /*! \brief Find a url for the given video using the given scraper
-     \param videoName name of the video to lookup
+     \param title title of the video to lookup
+     \param year year of the video to lookup
      \param scraper scraper to use for the lookup
      \param url [out] returned url from the scraper
      \param progress CGUIDialogProgress bar
      \return >0 on success, <0 on failure (cancellation), and 0 on no info found
      */
-    int FindVideo(const std::string &videoName, const ADDON::ScraperPtr &scraper, CScraperUrl &url, CGUIDialogProgress *progress);
+    int FindVideo(const std::string &title, int year, const ADDON::ScraperPtr &scraper, CScraperUrl &url, CGUIDialogProgress *progress);
+
+    /*! \brief Find a url for the given video using the given scraper
+     \param item the video to lookup
+     \param scraper scraper to use for the lookup
+     \param url [out] returned url from the scraper
+     \param progress CGUIDialogProgress bar
+     \return >0 on success, <0 on failure (cancellation), and 0 on no info found
+     */
+    int FindVideoUsingTag(CFileItem& item, const ADDON::ScraperPtr &scraper, CScraperUrl &url, CGUIDialogProgress *progress);
 
     /*! \brief Retrieve detailed information for an item from an online source, optionally supplemented with local data
      @todo sort out some better return codes.

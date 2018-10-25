@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2015 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with Kodi; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "ActionTranslator.h"
@@ -68,6 +56,7 @@ static const std::map<ActionName, ActionID> ActionMappings =
     { "codecinfo"                , ACTION_PLAYER_PROCESS_INFO },
     { "playerprocessinfo"        , ACTION_PLAYER_PROCESS_INFO },
     { "playerprogramselect"      , ACTION_PLAYER_PROGRAM_SELECT },
+    { "playerresolutionselect"   , ACTION_PLAYER_RESOLUTION_SELECT },
     { "nextpicture"              , ACTION_NEXT_PICTURE },
     { "previouspicture"          , ACTION_PREV_PICTURE },
     { "zoomout"                  , ACTION_ZOOM_OUT },
@@ -202,6 +191,7 @@ static const std::map<ActionName, ActionID> ActionMappings =
     { "settingsreset"            , ACTION_SETTINGS_RESET },
     { "settingslevelchange"      , ACTION_SETTINGS_LEVEL_CHANGE },
     { "togglefont"               , ACTION_TOGGLE_FONT},
+    { "videonextstream"          , ACTION_VIDEO_NEXT_STREAM},
 
     // 3D movie playback/GUI
     { "stereomode"               , ACTION_STEREOMODE_SELECT },   // cycle 3D modes, for now an alias for next

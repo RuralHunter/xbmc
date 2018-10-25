@@ -200,10 +200,6 @@ msgctxt "#31050"
 msgid "Press [B]OK[/B] to stop"
 msgstr "Press [B]OK[/B] to stop"
 
-msgctxt "#31051"
-msgid "Toggle language"
-msgstr "Toggle language"
-
 msgctxt "#31052"
 msgid "filtered"
 msgstr "filtered"
@@ -555,3 +551,7 @@ msgstr "Play your personal games or download one of the many game add-ons from t
 msgctxt "#31163"
 msgid "Show Fanart background"
 msgstr "Show Fanart background"
+
+msgctxt "#31165"
+msgid "Profile name"
+msgstr "Profile name"

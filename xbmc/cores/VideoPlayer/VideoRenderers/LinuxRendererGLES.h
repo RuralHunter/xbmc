@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2010-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2010-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #pragma once
@@ -29,7 +17,7 @@
 #include "cores/VideoSettings.h"
 #include "RenderFlags.h"
 #include "RenderInfo.h"
-#include "guilib/GraphicContext.h"
+#include "windowing/GraphicContext.h"
 #include "BaseRenderer.h"
 #include "xbmc/cores/VideoPlayer/DVDCodecs/Video/DVDVideoCodec.h"
 
@@ -64,13 +52,8 @@ struct YUVCOEF
 
 enum RenderMethod
 {
-  RENDER_GLSL   = 0x001,
-  RENDER_SW     = 0x004,
-  RENDER_POT    = 0x010,
-  RENDER_OMXEGL = 0x040,
-  RENDER_CVREF  = 0x080,
-  RENDER_MEDIACODEC = 0x400,
-  RENDER_MEDIACODECSURFACE = 0x800,
+  RENDER_GLSL = 0x01,
+  RENDER_CUSTOM = 0x02,
 };
 
 enum RenderQuality
@@ -111,9 +94,9 @@ public:
   // Player functions
   virtual bool Configure(const VideoPicture &picture, float fps, unsigned int orientation) override;
   virtual bool IsConfigured() override { return m_bConfigured; }
-  virtual void AddVideoPicture(const VideoPicture &picture, int index, double currentClock) override;
+  virtual void AddVideoPicture(const VideoPicture &picture, int index) override;
   virtual void UnInit() override;
-  virtual void Flush() override;
+  virtual bool Flush(bool saveBuffers) override;
   virtual void ReorderDrawPoints() override;
   virtual void SetBufferSize(int numBuffers) override { m_NumYV12Buffers = numBuffers; }
   virtual bool IsGuiLayer() override;
@@ -130,8 +113,8 @@ public:
   virtual bool Supports(ESCALINGMETHOD method) override;
 
 protected:
-  virtual void Render(DWORD flags, int index);
-  virtual void RenderUpdateVideo(bool clear, DWORD flags = 0, DWORD alpha = 255);
+  virtual void Render(unsigned int flags, int index);
+  virtual void RenderUpdateVideo(bool clear, unsigned int flags = 0, unsigned int alpha = 255);
 
   int  NextYV12Texture();
   virtual bool ValidateRenderTarget();
@@ -139,6 +122,7 @@ protected:
   virtual void ReleaseShaders();
   void SetTextureFilter(GLenum method);
   void UpdateVideoFilter();
+  AVColorPrimaries GetSrcPrimaries(AVColorPrimaries srcPrimaries, unsigned int width, unsigned int height);
 
   // textures
   virtual bool UploadTexture(int index);
@@ -204,21 +188,32 @@ protected:
     unsigned pixpertex_y;
   };
 
-  struct YUVBUFFER
+  struct CPictureBuffer
   {
-    YUVBUFFER();
-   ~YUVBUFFER();
+    CPictureBuffer();
+   ~CPictureBuffer();
 
     YUVPLANE fields[MAX_FIELDS][YuvImage::MAX_PLANES];
     YuvImage image;
 
     CVideoBuffer *videoBuffer;
     bool loaded;
+
+    AVColorPrimaries m_srcPrimaries;
+    AVColorSpace m_srcColSpace;
+    int m_srcBits = 8;
+    int m_srcTextureBits = 8;
+    bool m_srcFullRange;
+
+    bool hasDisplayMetadata = false;
+    AVMasteringDisplayMetadata displayMetadata;
+    bool hasLightMetadata = false;
+    AVContentLightMetadata lightMetadata;
   };
 
   // YV12 decoder textures
   // field index 0 is full image, 1 is odd scanlines, 2 is even scanlines
-  YUVBUFFER m_buffers[NUM_BUFFERS];
+  CPictureBuffer m_buffers[NUM_BUFFERS];
 
   void LoadPlane(YUVPLANE& plane, int type,
                  unsigned width,  unsigned height,
@@ -229,8 +224,9 @@ protected:
   Shaders::BaseVideoFilterShader *m_pVideoFilterShader;
   ESCALINGMETHOD m_scalingMethod;
   ESCALINGMETHOD m_scalingMethodGui;
+  bool m_fullRange;
+  AVColorPrimaries m_srcPrimaries;
 
   // clear colour for "black" bars
   float m_clearColour;
 };
-

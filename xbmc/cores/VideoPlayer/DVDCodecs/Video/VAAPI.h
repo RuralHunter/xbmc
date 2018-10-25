@@ -1,22 +1,11 @@
 /*
- *      Copyright (C) 2005-2014 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
- *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: LGPL-2.1-or-later
+ *  See LICENSES/README.md for more information.
  */
+
 #pragma once
 
 #include "DVDVideoCodec.h"
@@ -118,6 +107,7 @@ struct CVaapiConfig
   VAProfile profile;
   VAConfigAttrib attrib;
   CProcessInfo *processInfo;
+  bool driverIsMesa;
 };
 
 /**
@@ -344,8 +334,6 @@ private:
   static CCriticalSection m_section;
   VADisplay m_display;
   int m_refCount;
-  int m_attributeCount;
-  VADisplayAttribute *m_attributes;
   int m_profileCount;
   VAProfile *m_profiles;
   std::vector<CDecoder*> m_decoders;
@@ -394,7 +382,7 @@ public:
   static int FFGetBuffer(AVCodecContext *avctx, AVFrame *pic, int flags);
 
   static IHardwareDecoder* Create(CDVDStreamInfo &hint, CProcessInfo &processInfo, AVPixelFormat fmt);
-  static void Register(IVaapiWinSystem *winSystem, bool hevc);
+  static void Register(IVaapiWinSystem *winSystem, bool deepColor);
 
   static IVaapiWinSystem* m_pWinSystem;
 
@@ -433,7 +421,7 @@ protected:
   CProcessInfo& m_processInfo;
 
   static bool m_capGeneral;
-  static bool m_capHevc;
+  static bool m_capDeepColor;
 };
 
 //-----------------------------------------------------------------------------
@@ -482,7 +470,7 @@ public:
   void Discard(COutput *output, ReadyToDispose cb) override;
 protected:
   CVaapiDecodedPicture m_pic;
-  ReadyToDispose m_cbDispose;
+  ReadyToDispose m_cbDispose = nullptr;
   COutput *m_pOut;
   int m_refsToSurfaces = 0;
 };
@@ -519,7 +507,7 @@ protected:
   int m_currentIdx;
   int m_frameCount;
   EINTERLACEMETHOD m_vppMethod;
-  ReadyToDispose m_cbDispose;
+  ReadyToDispose m_cbDispose = nullptr;
   COutput *m_pOut = nullptr;
 };
 
@@ -555,7 +543,7 @@ protected:
   VideoPicture m_DVDPic;
   double m_frametime;
   double m_lastOutPts;
-  ReadyToDispose m_cbDispose;
+  ReadyToDispose m_cbDispose = nullptr;
   COutput *m_pOut;
   int m_refsToPics = 0;
 };

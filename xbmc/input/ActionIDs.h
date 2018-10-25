@@ -1,22 +1,11 @@
 /*
- *      Copyright (C) 2005-2017 Team Kodi
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this Program; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
+
 #pragma once
 
 /**
@@ -104,6 +93,7 @@
 
 #define ACTION_PLAYER_PROCESS_INFO    69 //!< show player process info (video decoder, pixel format, pvr signal strength and the like
 #define ACTION_PLAYER_PROGRAM_SELECT  70
+#define ACTION_PLAYER_RESOLUTION_SELECT  71
 #define ACTION_SMALL_STEP_BACK        76  //!< jumps a few seconds back during playback of movie. Can b used in videoFullScreen.xml window id=2005
 
 #define ACTION_PLAYER_FORWARD         77  //!< FF in current file played. global action, can be used anywhere
@@ -276,6 +266,8 @@
 #define ACTION_PLAYER_RESET           248 //!< Send a reset command to the active game
 
 #define ACTION_TOGGLE_FONT            249 //!< Toggle font. Used in TextViewer dialog
+
+#define ACTION_VIDEO_NEXT_STREAM      250 //!< Cycle video streams. Used in videofullscreen.
 
 // Voice actions
 #define ACTION_VOICE_RECOGNIZE        300

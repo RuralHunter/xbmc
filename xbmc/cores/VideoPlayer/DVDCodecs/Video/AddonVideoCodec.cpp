@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2017 Team Kodi
- *      http://kodi.tv
+ *  Copyright (C) 2017-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "AddonVideoCodec.h"
@@ -198,9 +186,24 @@ CDVDVideoCodec::VCReturn CAddonVideoCodec::GetPicture(VideoPicture* pVideoPictur
     pVideoPicture->iHeight = picture.height;
     pVideoPicture->pts = static_cast<double>(picture.pts);
     pVideoPicture->dts = DVD_NOPTS_VALUE;
-    pVideoPicture->color_range = 0;
-    pVideoPicture->color_space = 4;
     pVideoPicture->iFlags = 0;
+    pVideoPicture->chroma_position = 0;
+    pVideoPicture->colorBits = 8;
+    pVideoPicture->color_primaries = 0;
+    pVideoPicture->color_range = 0;
+    pVideoPicture->color_space = AVCOL_SPC_UNSPECIFIED;
+    pVideoPicture->color_transfer = 0;
+    pVideoPicture->hasDisplayMetadata = false;
+    pVideoPicture->hasLightMetadata = false;
+    pVideoPicture->iDuration = 0;
+    pVideoPicture->iFrameType = 0;
+    pVideoPicture->iRepeatPicture = 0;
+    pVideoPicture->pict_type = 0;
+    pVideoPicture->qp_table = nullptr;
+    pVideoPicture->qscale_type = 0;
+    pVideoPicture->qstride = 0;
+    pVideoPicture->stereoMode.clear();
+
     if (m_codecFlags & DVD_CODEC_CTRL_DROP)
       pVideoPicture->iFlags |= DVP_FLAG_DROPPED;
 

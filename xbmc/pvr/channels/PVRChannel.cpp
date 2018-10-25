@@ -1,26 +1,15 @@
 /*
- *      Copyright (C) 2012-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2012-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "PVRChannel.h"
 
 #include "ServiceBroker.h"
+#include "addons/PVRClient.h"
 #include "filesystem/File.h"
 #include "guilib/LocalizeStrings.h"
 #include "threads/SingleLock.h"
@@ -30,7 +19,6 @@
 
 #include "pvr/PVRDatabase.h"
 #include "pvr/PVRManager.h"
-#include "pvr/addons/PVRClients.h"
 #include "pvr/channels/PVRChannelGroupInternal.h"
 #include "pvr/epg/EpgContainer.h"
 #include "pvr/timers/PVRTimers.h"
@@ -145,7 +133,7 @@ bool CPVRChannel::Delete(void)
   {
     CPVRChannelPtr empty;
     epg->SetChannel(empty);
-    CServiceBroker::GetPVRManager().EpgContainer().DeleteEpg(*epg, true);
+    CServiceBroker::GetPVRManager().EpgContainer().DeleteEpg(epg, true);
     CSingleLock lock(m_critSection);
     m_bEPGCreated = false;
   }
@@ -403,18 +391,22 @@ bool CPVRChannel::SetClientID(int iClientId)
 
 void CPVRChannel::UpdatePath(CPVRChannelGroupInternal* group)
 {
-  if (!group) return;
+  if (!group)
+    return;
 
-  std::string strFileNameAndPath;
-  CSingleLock lock(m_critSection);
-  strFileNameAndPath = StringUtils::Format("%s%s_%d.pvr",
-                                           group->GetPath(),
-                                           CServiceBroker::GetPVRManager().Clients()->GetClientAddonId(m_iClientId).c_str(),
-                                           m_iUniqueId);
-  if (m_strFileNameAndPath != strFileNameAndPath)
+  const CPVRClientPtr client = CServiceBroker::GetPVRManager().GetClient(m_iClientId);
+  if (client)
   {
-    m_strFileNameAndPath = strFileNameAndPath;
-    SetChanged();
+    CSingleLock lock(m_critSection);
+    std::string strFileNameAndPath = StringUtils::Format("%s%s_%d.pvr",
+                                                         group->GetPath(),
+                                                         client->ID().c_str(),
+                                                         m_iUniqueId);
+    if (m_strFileNameAndPath != strFileNameAndPath)
+    {
+      m_strFileNameAndPath = strFileNameAndPath;
+      SetChanged();
+    }
   }
 }
 
@@ -535,8 +527,8 @@ int CPVRChannel::GetEPG(CFileItemList &results) const
   CPVREpgPtr epg = GetEPG();
   if (!epg)
   {
-    CLog::Log(LOGDEBUG, "PVR - %s - cannot get EPG for channel '%s'",
-        __FUNCTION__, m_strChannelName.c_str());
+    CLog::LogFC(LOGDEBUG, LOGPVR, "Cannot get EPG for channel '%s'",
+                m_strChannelName.c_str());
     return -1;
   }
 
@@ -564,12 +556,20 @@ CPVREpgInfoTagPtr CPVRChannel::GetEPGNow() const
 
 CPVREpgInfoTagPtr CPVRChannel::GetEPGNext() const
 {
-  CPVREpgPtr epg = GetEPG();
+  const CPVREpgPtr epg = GetEPG();
   if (epg)
     return epg->GetTagNext();
 
-  CPVREpgInfoTagPtr empty;
-  return empty;
+  return CPVREpgInfoTagPtr();
+}
+
+CPVREpgInfoTagPtr CPVRChannel::GetEPGPrevious() const
+{
+  const CPVREpgPtr epg = GetEPG();
+  if (epg)
+    return epg->GetTagPrevious();
+
+  return CPVREpgInfoTagPtr();
 }
 
 bool CPVRChannel::SetEPGEnabled(bool bEPGEnabled)
@@ -798,5 +798,6 @@ std::string CPVRChannel::EPGScraper(void) const
 
 bool CPVRChannel::CanRecord(void) const
 {
-  return CServiceBroker::GetPVRManager().Clients()->GetClientCapabilities(m_iClientId).SupportsRecordings();
+  const CPVRClientPtr client = CServiceBroker::GetPVRManager().GetClient(m_iClientId);
+  return client && client->GetClientCapabilities().SupportsRecordings();
 }

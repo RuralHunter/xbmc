@@ -1,21 +1,9 @@
 /*
- *      Copyright (C) 2005-2013 Team XBMC
- *      http://kodi.tv
+ *  Copyright (C) 2005-2018 Team Kodi
+ *  This file is part of Kodi - https://kodi.tv
  *
- *  This Program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2, or (at your option)
- *  any later version.
- *
- *  This Program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with XBMC; see the file COPYING.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
+ *  SPDX-License-Identifier: GPL-2.0-or-later
+ *  See LICENSES/README.md for more information.
  */
 
 #include "AddonDatabase.h"
@@ -33,7 +21,6 @@
 #include "utils/log.h"
 #include "utils/StringUtils.h"
 #include "utils/Variant.h"
-#include "DllLibCPluff.h"
 #include "XBDateTime.h"
 
 using namespace ADDON;
@@ -226,46 +213,44 @@ void CAddonDatabase::UpdateTables(int version)
 
     //Ugly hack incoming! As the addon manager isnt created yet, we need to start up our own copy
     //cpluff to find the currently enabled addons.
-    auto cpluff = std::unique_ptr<DllLibCPluff>(new DllLibCPluff());
-    cpluff->Load();
     cp_status_t status;
-    status = cpluff->init();
+    status = cp_init();
     if (status != CP_OK)
     {
       CLog::Log(LOGERROR, "AddonDatabase: Upgrade failed. cp_init() returned status: %i", status);
       return;
     }
 
-    cp_context_t* cp_context = cpluff->create_context(&status);
+    cp_context_t* cp_context = cp_create_context(&status);
 
-    status = cpluff->register_pcollection(cp_context, CSpecialProtocol::TranslatePath("special://home/addons").c_str());
+    status = cp_register_pcollection(cp_context, CSpecialProtocol::TranslatePath("special://home/addons").c_str());
     if (status != CP_OK)
     {
       CLog::Log(LOGERROR, "AddonDatabase: Upgrade failed. cp_register_pcollection() returned status: %i", status);
       return;
     }
 
-    status = cpluff->register_pcollection(cp_context, CSpecialProtocol::TranslatePath("special://xbmc/addons").c_str());
+    status = cp_register_pcollection(cp_context, CSpecialProtocol::TranslatePath("special://xbmc/addons").c_str());
     if (status != CP_OK)
     {
       CLog::Log(LOGERROR, "AddonDatabase: Upgrade failed. cp_register_pcollection() returned status: %i", status);
       return;
     }
 
-    status = cpluff->register_pcollection(cp_context, CSpecialProtocol::TranslatePath("special://xbmcbin/addons").c_str());
+    status = cp_register_pcollection(cp_context, CSpecialProtocol::TranslatePath("special://xbmcbin/addons").c_str());
     if (status != CP_OK)
     {
       CLog::Log(LOGERROR, "AddonDatabase: Upgrade failed. cp_register_pcollection() returned status: %i", status);
       return;
     }
 
-    cpluff->scan_plugins(cp_context, CP_SP_UPGRADE);
+    cp_scan_plugins(cp_context, CP_SP_UPGRADE);
 
     std::string systemPath = CSpecialProtocol::TranslatePath("special://xbmc/addons");
     std::string now = CDateTime::GetCurrentDateTime().GetAsDBDateTime();
     BeginTransaction();
     int n;
-    cp_plugin_info_t** cp_addons = cpluff->get_plugins_info(cp_context, &status, &n);
+    cp_plugin_info_t** cp_addons = cp_get_plugins_info(cp_context, &status, &n);
     for (int i = 0; i < n; ++i)
     {
       const char* id = cp_addons[i]->identifier;
@@ -276,7 +261,7 @@ void CAddonDatabase::UpdateTables(int version)
           "('%s', NOT %d AND NOT EXISTS (SELECT * FROM disabled WHERE addonID='%s'), '%s')",
           id, inSystem, id, now.c_str()));
     }
-    cpluff->release_info(cp_context, cp_addons);
+    cp_release_info(cp_context, cp_addons);
     CommitTransaction();
 
     m_pDS->exec("DROP TABLE disabled");
@@ -1074,7 +1059,7 @@ bool CAddonDatabase::AddPackage(const std::string& addonID,
                                 const std::string& packageFileName,
                                 const std::string& hash)
 {
-  std::string sql = PrepareSQL("insert into package(id, addonID, filename, hash)"
+  std::string sql = PrepareSQL("insert or ignore into package(id, addonID, filename, hash)"
                               "values(NULL, '%s', '%s', '%s')",
                               addonID.c_str(), packageFileName.c_str(), hash.c_str());
   return ExecuteQuery(sql);
