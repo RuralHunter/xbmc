@@ -8803,7 +8803,7 @@ void CVideoDatabase::CleanDatabase(CGUIDialogProgressBarHandle* handle, const st
       // database, leading to potentially missed items on re-scan (if deleted files are
       // later re-added to a source)
       CLog::LogF(LOGDEBUG, LOGDATABASE, "Cleaning path hashes");
-      m_pDS->query("SELECT DISTINCT strPath FROM path JOIN files ON files.idPath=path.idPath WHERE files.idFile IN " + filesToDelete);
+      m_pDS->query("SELECT DISTINCT strPath FROM path JOIN files ON files.idPath=path.idPath WHERE files.idFile IN " + fids);
       int pathHashCount = m_pDS->num_rows();
       while (!m_pDS->eof())
       {

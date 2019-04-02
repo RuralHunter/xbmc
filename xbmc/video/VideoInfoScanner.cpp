@@ -429,7 +429,7 @@ namespace VIDEO
       if (CUtil::ExcludeFileOrFolder(pItem->GetPath(), (content == CONTENT_TVSHOWS) ? CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_tvshowExcludeFromScanRegExps
                                                                     : CServiceBroker::GetSettingsComponent()->GetAdvancedSettings()->m_moviesExcludeFromScanRegExps))
         continue;
-
+      
       if (info2->Content() == CONTENT_MOVIES || info2->Content() == CONTENT_MUSICVIDEOS)
       {
         if (m_handle)
@@ -956,6 +956,31 @@ namespace VIDEO
             items.Remove(y);
           else
             break;
+        }
+      }
+      else if (StringUtils::EqualsNoCase(strFileX, "INDEX.BDM")||StringUtils::EqualsNoCase(strFileX, "index.bdmv"))
+      {
+        int j=x+1;
+        while (j < items.Size())
+        {
+          std::string strPathY, strFileY;
+          URIUtils::Split(items[j]->GetPath(), strPathY, strFileY);
+          if (StringUtils::StartsWithNoCase(strPathY, strPathX))
+            items.Remove(j);
+          else
+            j++;
+        }
+        j=x-1;
+        while (j >=0)
+        {
+          std::string strPathY, strFileY;
+          URIUtils::Split(items[j]->GetPath(), strPathY, strFileY);
+          if (StringUtils::StartsWithNoCase(strPathY, strPathX))
+          {
+            items.Remove(j);
+            x--;
+          }
+          j--;
         }
       }
       x++;
