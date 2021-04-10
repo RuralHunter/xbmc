@@ -935,10 +935,7 @@ void CVideoPlayer::OpenDefaultStreams(bool reset)
     if (OpenStream(m_CurrentSubtitle, stream.demuxerId, stream.id, stream.source))
     {
       valid = true;
-      if(!psp.relevant(stream))
-        visible = false;
-      else if(stream.flags & StreamFlags::FLAG_FORCED)
-        visible = true;
+      visible = true;
       break;
     }
   }
