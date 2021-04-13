@@ -97,6 +97,28 @@ void CVideoInfoDownloader::Process()
   m_state = DO_NOTHING;
 }
 
+//fix for CMCT style names
+std::string parseMovieTitle(const std::string &title)
+{
+    CLog::Log(LOGINFO,"Parsing movie title: %s", title.c_str());
+    size_t start=0;    //the position actual name should start
+    if(title.at(0)=='[') //CMCT style
+    {
+        start=title.find(']');
+        if(start != std::string::npos) //found end
+        {
+            start++;
+            if(title.at(start)=='.')//skip '.'
+                start++;
+        }
+        if(start>=title.size() || start<0) //don't skip if the '[]' includes the whole filename
+            start=0;
+    }    
+    std::string actual=title.substr(start);
+    CLog::Log(LOGINFO,"Parsed actual title name: %s", actual.c_str());
+    return actual;
+}
+
 int CVideoInfoDownloader::FindMovie(const std::string &movieTitle, int movieYear,
                                     MOVIELIST& movieList,
                                     CGUIDialogProgress *pProgress /* = NULL */)
@@ -106,7 +128,7 @@ int CVideoInfoDownloader::FindMovie(const std::string &movieTitle, int movieYear
   if (pProgress)
   { // threaded version
     m_state = FIND_MOVIE;
-    m_movieTitle = movieTitle;
+    m_movieTitle = parseMovieTitle(movieTitle);
     m_movieYear = movieYear;
     m_found = 0;
     if (IsRunning())
