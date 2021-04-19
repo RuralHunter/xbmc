@@ -125,10 +125,10 @@ int CVideoInfoDownloader::FindMovie(const std::string &movieTitle, int movieYear
 {
   //CLog::Log(LOGDEBUG,"CVideoInfoDownloader::FindMovie(%s)", strMovie.c_str());
 
+  m_movieTitle = parseMovieTitle(movieTitle);
   if (pProgress)
   { // threaded version
     m_state = FIND_MOVIE;
-    m_movieTitle = parseMovieTitle(movieTitle);
     m_movieYear = movieYear;
     m_found = 0;
     if (IsRunning())
