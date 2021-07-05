@@ -100,7 +100,7 @@ void CVideoInfoDownloader::Process()
 //fix for CMCT style names
 std::string parseMovieTitle(const std::string &title)
 {
-    CLog::Log(LOGDEBUG,"Parsing movie title: %s", title.c_str());
+    CLog::Log(LOGINFO,"Parsing movie title: %s", title.c_str());
     size_t start=0;    //the position actual name should start
     if(title.at(0)=='[') //CMCT style
     {
@@ -115,7 +115,7 @@ std::string parseMovieTitle(const std::string &title)
             start=0;
     }    
     std::string actual=title.substr(start);
-    CLog::Log(LOGDEBUG,"Parsed actual title name: %s", actual.c_str());
+    CLog::Log(LOGINFO,"Parsed actual title name: %s", actual.c_str());
     return actual;
 }
 
